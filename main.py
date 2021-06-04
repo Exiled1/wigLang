@@ -20,19 +20,37 @@ lines = [
 matches = [re.match(r"((int|bool) +)?([a-z]) *((:=|=)\s(.+))?;", line) for line in lines]
 
 grouplist = [(match.groups() if match != None else None) for match in matches]
+
 class Scope:
   def __init__(self, CallMode, ScopeMode):
     self.callMode = CallMode
     self.scopeMode = ScopeMode
-  #def actRecord(self, )
+    self.variables = []
+    # make a dictionary of possible instructions, takes functions, declarations.
+  def get_var(self): # getter for the var tuples record, [(var:value),...]
+    return self.variables
+  # TODO, make copy method.
+  def set_var(self, var,value):
+    self.variables.push((var,value))
+  # Printing method for showing 
   def __str__(self):
-    return f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}'
+    keyPairList = [] # ["(key:value)", "(key:value)"]
+    for key, value in self.variables:
+      kpStr = f'({key}:{value})' # (key:value)
+      keyPairList.append(kpStr)
+      # todo in here.
+    retStr = f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}\n'
+    retStr += '[' + ', '.join(keyPairList) + ']\n'
+    return retStr
+
 class Declare:
     def __init__(self, type_, name):
         self.type = type_
         self.name = name
     def __str__(self):
         return f'{self.type} {self.name};\n'
+    def eval(self, scope):
+        scope.set_var(self.name, None)
 
 class Assign:
     def __init__(self, name, value):
@@ -72,7 +90,7 @@ class Function:
         self.code_block = None
     def __str__(self):
         params = ', '.join(param[0] + ' ' + param[1] for param in self.param_list)
-        return f'{self.return_type} {self.name}({params})\n'
+        return f'{self.return_type} {self.name}({params})\n{str(self.code_block)}'
 
 def parse_declaration(line):
     declare_and_maybe_assignment_rule = r"((int|bool) +)?([a-z]) *((:=|=)\s(.+))?;"

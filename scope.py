@@ -17,5 +17,5 @@ class Scope:
       keyPairList.push(kpStr)
       # todo in here.
     retStr = f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}\n'
-    retStr += ""
+    retStr += f'{keyPairList}'
     return retStr
