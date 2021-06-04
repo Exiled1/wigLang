@@ -24,8 +24,9 @@ class Scope:
   def __init__(self, CallMode, ScopeMode):
     self.callMode = CallMode
     self.scopeMode = ScopeMode
+  #def actRecord(self, )
   def __str__(self):
-    return ''
+    return f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}'
 class Declare:
     def __init__(self, type_, name):
         self.type = type_
@@ -70,7 +71,8 @@ class Function:
         self.param_list = param_list
         self.code_block = None
     def __str__(self):
-        return ''
+        params = ', '.join(param[0] + ' ' + param[1] for param in self.param_list)
+        return f'{self.return_type} {self.name}({params})\n'
 
 def parse_declaration(line):
     declare_and_maybe_assignment_rule = r"((int|bool) +)?([a-z]) *((:=|=)\s(.+))?;"
@@ -103,14 +105,22 @@ def is_function(line):
 
 def parse_function(line):
     function_and_param_def_rule = r'(int|bool) +(\w+)\(((int|bool) +(\w+))?(, *(int|bool) +(\w+))*\)'
+    function_param_rule = r'.*\(((\w+\s+\w+)?|(\w+\s+\w+(,\s?\w+\s+\w+)+))\).*'
     match = re.match(function_and_param_def_rule,line)
 
     if match != None:
         groups = match.groups()
-        param_count = (len(groups) - 3)/3
-        return_type = groups[1]
-        name = groups[2]
-        params = [(groups[i * param_count],groups[i * param_count + 1]) for i in range(1,param_count+1)]
+        return_type = groups[0]
+        name = groups[1]
+        match = re.match(function_param_rule,line)
+        params = []
+        if match != None:
+            groups = match.groups()
+            param_string = groups[0]
+            if param_string.strip() != '':
+                param_strings = param_string.split(',')
+                params = [(p[0],p[1]) for p in [pstring.strip().split(' ') for pstring in param_strings]]
+                print(params)
         if not (return_type and name and params):
             return None
         fun = Function(return_type, name, params)
@@ -155,16 +165,16 @@ def parse_lines(lines):
             continue
         ast_node = identify_line(line)
         if is_function(line):
-            function = ast_node
+            function = ast_node[0]
         block.add(ast_node) if ast_node != None else ''
     if top_block != block and depth == 0:
         print('Expecting closing \'}\'!')
     return block
 
-def Evaluate(block: Block, scope):
-  actRecord = [] # Make an activation record inside the block.
-  block.eval()
-  #for inst in block.instructions:
+def Evaluate(block, scope):
+    actRecord = [] # Make an activation record inside the block.
+    block.eval()
+    # for inst in block.instructions:
     
   
 with open('ex1.txt', 'r') as file:
