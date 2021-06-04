@@ -22,4 +22,4 @@ with open('ex2.txt', 'r') as file:
     parsed = parser.parse_lines(lines)
     print(parsed)
     final = interpreter.evaluate(parsed, parser.Scope('',''))
-    print(final)
+    print('Result: ' + str(final))

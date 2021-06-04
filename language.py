@@ -9,6 +9,8 @@ class Declare:
         self.type = type_
         self.name = name
     def __str__(self):
+        if self.type == '{.}':
+            return ''
         return f'{self.type} {self.name};\n'
     def eval(self, scope):
         return scope.push_var(self.name, None)
@@ -18,6 +20,8 @@ class Assign:
         self.name = name
         self.value = value
     def __str__(self):
+        if self.value == 'λ':
+            return ''
         return f'{self.name} := {self.value};\n'
     def eval(self, scope):
         return scope.set_var(self.name, self.value)

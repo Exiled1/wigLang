@@ -28,6 +28,7 @@ class Scope:
 
     def push_var(self, name, value):
         self.variables.insert(0, (name,value))
+        print(self)
         return self
 
 
@@ -39,7 +40,6 @@ class Scope:
         else:
             print(f'{name} is not declared!')
             self.push_var(name,value)
-        print(self)
         return self
     
 
@@ -47,6 +47,7 @@ class Scope:
         idx = self.find_index(name)
         if idx != -1:
             self.variables.remove(self.variables[idx])
+        print(self)
         return self
     
     
@@ -54,7 +55,10 @@ class Scope:
     def __str__(self):
         keyPairList = [] # ["(key:value)", "(key:value)"]
         for key, value in self.variables:
-            kpStr = f'({key}:{value})' # (key:value)
+            if value is None:
+                value = '?'
+            # kpStr = f'({key}:{value})' # (key:value)
+            kpStr = f'{key}:{value}' # (key:value)
             keyPairList.append(kpStr)
         # todo in here.
         retStr = ''
@@ -115,7 +119,7 @@ def parse_function(line):
         if not (return_type and name and params):
             return None
         fun = Function(return_type, name, params)
-        return [fun]
+        return [Declare('{.}',name),Assign(name,'λ'),fun]
     else:
         return None
 
@@ -158,7 +162,7 @@ def parse_lines(lines):
             continue
         ast_node = identify_line(line)
         if is_function(line):
-            function = ast_node[0]
+            function = ast_node[2]
         block.add(ast_node) if ast_node != None else ''
     if top_block != block and depth == 0:
         print('Expecting closing \'}\'!')
