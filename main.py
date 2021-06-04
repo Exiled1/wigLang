@@ -161,8 +161,6 @@ def parse_lines(lines):
         print('Expecting closing \'}\'!')
     return block
 
-
-
 def Evaluate(block: Block, scope):
   actRecord = [] # Make an activation record inside the block.
   block.eval()
