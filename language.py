@@ -11,7 +11,7 @@ class Declare:
     def __str__(self):
         return f'{self.type} {self.name};\n'
     def eval(self, scope):
-        return scope.set_var(self.name, None)
+        return scope.push_var(self.name, None)
 
 class Assign:
     def __init__(self, name, value):
@@ -27,9 +27,13 @@ class Block:
         self.instructions = instructions
         self.super_block = None
         self.depth = depth
+        self.local_variables = []
     
-    def add(self, ast_node):
+    def add(self, ast_node): # ast_node is a list remember
         ast_node = flatten([ast_node])
+        for ast in ast_node:
+            if type(ast) is Declare:
+                self.local_variables.append(ast.name)
         for ast in ast_node:
             self.instructions.append(ast) if ast != None else ''
     
@@ -48,9 +52,10 @@ class Block:
         return pp_block
     
     def eval(self, scope):
-        scope_ = scope
         for inst in self.instructions:
-            scope_ = inst.eval(scope_)
+            scope = inst.eval(scope)
+        for var in self.local_variables:
+            scope = scope.pop_var(var)
         return scope
 
 class Function:
@@ -69,5 +74,5 @@ class Function:
             scope = scope.push_var(name, None)
         scope = self.code_block.eval(scope)
         for type_, name in self.param_list:
-            scope = scope.pop_val(name)
+            scope = scope.pop_var(name)
         return scope

@@ -37,13 +37,15 @@ class Scope:
         if idx > -1:
             self.variables[idx] = (name,value)
         else:
+            print(f'{name} is not declared!')
             self.push_var(name,value)
         print(self)
         return self
     
 
-    def pop_val(self, name):
-        if (idx := self.find_index(name)) > -1:
+    def pop_var(self, name):
+        idx = self.find_index(name)
+        if idx != -1:
             self.variables.remove(self.variables[idx])
         return self
     
@@ -145,6 +147,8 @@ def parse_lines(lines):
                 block.add(new_block)
             else:
                 function.code_block = new_block
+                # function.code_block.depth -= 1
+                # depth -= 1
             new_block.super_block = block
             block = new_block
             continue
