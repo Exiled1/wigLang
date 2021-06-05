@@ -1,73 +1,81 @@
 import re
 import numpy as np
-from enum import Enum
 from language import *
-
-
+# from pyparsing import Forward, Word, alphas, alphanums, nums, ZeroOrMore, Literal, Group, Optional, other
+import expressions
 
 def flatten(lis):
     arr = np.array(lis)
     flat = arr.flatten()
     return list(flat)
 
-class Scope:
-    def __init__(self, CallMode, ScopeMode):
-        self.callMode = CallMode
-        self.scopeMode = ScopeMode
-        self.variables = []
-        # make a dictionary of possible instructions, takes functions, declarations.
-
-    def find_index(self, name):
-        i = 0
-        for var, val in self.variables:
-            if name == var:
-                return i
-            i += 1
-        return -1
-
-
-    def push_var(self, name, value):
-        self.variables.insert(0, (name,value))
-        print(self)
-        return self
-
-
-    # TODO, make copy method.
-    def set_var(self, name, value):
-        idx = self.find_index(name)
-        if idx > -1:
-            self.variables[idx] = (name,value)
-        else:
-            print(f'{name} is not declared!')
-            self.push_var(name,value)
-        return self
-    
-
-    def pop_var(self, name):
-        idx = self.find_index(name)
-        if idx != -1:
-            self.variables.remove(self.variables[idx])
-        print(self)
-        return self
+# [Expression()]
+# x := f(x+1+a) * x + 1
+'''
+# Expression body: [
+    Mult([
+        function call:
+        params: 
+            Add(Var(x), Add(Var(a),1))
+        
+    ])
     
     
-    # Printing method for showing 
-    def __str__(self):
-        keyPairList = [] # ["(key:value)", "(key:value)"]
-        for key, value in self.variables:
-            if value is None:
-                value = '?'
-            # kpStr = f'({key}:{value})' # (key:value)
-            kpStr = f'{key}:{value}' # (key:value)
-            keyPairList.append(kpStr)
-        # todo in here.
-        retStr = ''
-        # retStr = f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}\n'
-        retStr += '[' + ', '.join(keyPairList) + ']'
-        return retStr
-    # newScopr =  Scope(self.CallMode, self....)
-    # newScope.variables = [*self.varaibles]
-    # newScope
+]
+# function call
+# 
+'''
+
+'''
+2 + x + 4 * 9
+Add(2, Add(Var(x), Mult(4, 9)))
+
+Mult(FunctionCall('f', [Add(Var(x), Add(Var(a)))])
+
+Every time we encounter a function, split at first comma, then evaluate
+recursively
+
+Add(x,y) ~= Binary(x,y,'+',arithmetic._add) ~= arithmetic.make_add(x,y)
+f(x+1)
+Expression(FunctionCall('f', [Expression(Add(Var('x'), 1))] ))
+'''
+
+# def parse_expression(parse_str):
+#     lparen = Literal("(").suppress()
+#     rparen = Literal(")").suppress()
+#     identifier = Word(alphas, alphanums + "_")
+#     integer = Word(nums)
+#     functor = identifier
+    
+#     #recursive expression parsing.
+#     expression = Forward()
+#     arg = Group(expression) | identifier | integer
+#     args = arg + ZeroOrMore("," + arg)
+
+#     expression << functor + Group(lparen + Optional(args) + rparen)
+    
+#     parsed_expression = expression.parseString(parse_str)
+#     print(f" parsed Exp: {parsed_expression}")
+#     return parsed_expression
+
+def expression_transformer(root):
+    for tag,child in root.items():
+        if tag == 'func_call':
+            func_name = child['func_name']
+            params = [expression_transformer(p) for p in child['params']]
+            func = Function(func_name,params)
+            return func
+        elif tag == '':
+            return None
+
+def parse_expression(exp_str):
+    parsed = expressions.expression_parser(exp_str)
+    print(parsed.asDict())
+    print(parsed.asList())
+    print(parsed.dump())
+
+    # expression_transformer(parsed.asDict())
+    return None
 
 
 def parse_declaration(line):
@@ -82,14 +90,20 @@ def parse_declaration(line):
         ret = []
         decl = Declare(type_,name)
         ass = Assign(name,value) 
+
+        if name and value:
+            res = parse_expression(value)
+            if type(res) is Expression:
+                ass = Assign(name,res)
+
         ret.append(decl) if type_ and name else ''
         ret.append(ass) if name and value else ''
         if len(ret) == 0:
             print(f'Could not read line:\n{line}')
             return None
         return ret
-
     return None
+
 def is_declare(line):
     return parse_declaration(line) != None
 
@@ -126,6 +140,7 @@ def parse_function(line):
 def preprocess(source):
     lines = source.split('\n')
     return ''.join(line.strip() for line in lines)
+
 def lineify(processed):
     lines = processed.replace(';',';\n').replace('{','\n{\n').replace('}','\n}\n').split('\n')
     return [line for line in lines if line != '']
