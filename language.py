@@ -14,7 +14,7 @@ class Declare:
         return f'{self.type} {self.name};\n'
     def eval(self, scope):
         return scope.push_var(self.name, None)
-
+   
 class Assign:
     def __init__(self, name, value):
         self.name = name

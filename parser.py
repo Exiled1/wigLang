@@ -42,41 +42,24 @@ f(x+1)
 Expression(FunctionCall('f', [Expression(Add(Var('x'), 1))] ))
 '''
 
-# def parse_expression(parse_str):
-#     lparen = Literal("(").suppress()
-#     rparen = Literal(")").suppress()
-#     identifier = Word(alphas, alphanums + "_")
-#     integer = Word(nums)
-#     functor = identifier
-    
-#     #recursive expression parsing.
-#     expression = Forward()
-#     arg = Group(expression) | identifier | integer
-#     args = arg + ZeroOrMore("," + arg)
-
-#     expression << functor + Group(lparen + Optional(args) + rparen)
-    
-#     parsed_expression = expression.parseString(parse_str)
-#     print(f" parsed Exp: {parsed_expression}")
-#     return parsed_expression
-
 def expression_transformer(root):
-    # for i,item in enumerate(root):
-    #     if isinstance(item, str) or isinstance(item, int):
-    #         print(i,item)
-    #     else:
-    #         # if item.getName() == 'func_call':
-    #         #     print('FUNCTION')
-    #         print(i, item.getName(), item)
-    # return None
-    if type(root) is int:
-        return root
+    if type(root) is list:
+        if len(root) == 1:
+            root = root[0]
+        elif len(root) == 0:
+            return None
+        else:
+            print('Cannot transform empty list!', root)
+
+
+    # if type(root) is int:
+    #     return root
     if type(root) is tuple:
         if type(root[0]) is int:
             root = root[1]
         else:
             root = {root[0]: root[1]}
-    print(repr(root))
+    # print(repr(root))
     if type(root) is dict:
         for tag,child in root.items():
             if tag == 'func_call':
@@ -87,6 +70,7 @@ def expression_transformer(root):
                 params = []
                 for p in child['params']:
                     if not (type(p) is str):
+                        print(p)
                         params.append(expression_transformer(p))
                         continue
                     # print(type(p), repr(p), type(child['params'][p]), repr(child['params'][p]))
@@ -100,11 +84,11 @@ def expression_transformer(root):
             elif tag == 'num':
                 return child
             elif tag == 'bin_op':
-                print('binexp.   ', repr(child))
-                lhs = expression_transformer(child['lhs'][0])
+                # print('binexp.   ', repr(child))
+                lhs = expression_transformer(child['lhs'])
                 op = child['op']
-                rhs = expression_transformer(child['rhs'][0])
-                print('binary op',child['lhs'],child['rhs'], lhs, op, rhs)
+                rhs = expression_transformer(child['rhs'])
+                # print('binary op',child['lhs'],child['rhs'], lhs, op, rhs)
                 return Binary(lhs, rhs, op, arithmetic.op_func(op))
             else:
                 print('could not find', tag)
@@ -124,8 +108,12 @@ def parse_expression(exp_str):
     # print(parsed.dump())
 
     # return Expression(expression_transformer(parsed.asDict()))
-    return Expression(expression_transformer(parsed.asDict()))
-
+    p_dict = parsed.asDict()
+    print('given ', exp_str)
+    print('parser dictionary', p_dict)
+    result = Expression(expression_transformer(p_dict))
+    print('result', result)
+    return result
 
 def parse_declaration(line):
     declare_and_maybe_assignment_rule = r"((int|bool) +)?([a-z]) *((:=|=)\s(.+))?;"
