@@ -117,6 +117,18 @@ def flip_left(root):
     root['rhs'] = tmp
     return root
 
+def flip_right(root):
+    if not (type(root) is dict):
+        return root
+    if 'bin_op' in root.keys():
+        root['bin_op'] = flip_right(root['bin_op'])
+        return root
+    tmp = root['rhs']
+    root['rhs'] = flip_right(root['lhs'])
+    root['lhs'] = tmp
+    return root
+
+
 def arith_action(tree):
     # if type(tree) is ParseResults:
     #     print(tree.asDict())
@@ -126,13 +138,19 @@ def arith_action(tree):
     left = False
     dicts = []
     curr = {}
+    print(type(tree['bin_op']))
+    tmp = tree['bin_op']
+    tree['bin_op'] = []
+    for t in tmp:
+        tree['bin_op'].insert(0,t)
+
     for term in tree['bin_op']:
         # print(term)
         counter += 1
         if counter % 2 == 0:
             left = not left
             if left:
-                curr['lhs'] = term
+                curr['rhs'] = term
             else:
                 # if type(term) is int or type(term) is str:
                 #     curr['rhs'] = term
@@ -144,19 +162,19 @@ def arith_action(tree):
                 #         dicts.append(curr)
                 #         continue
                 if len(tree['bin_op']) == counter+1:
-                    curr['rhs'] = term
+                    curr['lhs'] = term
                     dicts.append(curr)
                     # print(curr['rhs'])
                     break
-                new_curr = { 'lhs' : term }
-                curr['rhs'] = {'bin_op':new_curr}
+                new_curr = { 'rhs' : term }
+                curr['lhs'] = {'bin_op':new_curr}
                 dicts.append(curr)
                 curr = new_curr
                 left = True
         else:
             curr['op'] = term
-    sub_tree = flip_left(dicts[0])
-    # sub_tree = dicts[0]
+    # sub_tree = flip_right(dicts[0])
+    sub_tree = dicts[0]
     if counter < 2 and counter > -1:
         return tree['bin_op']
     if len(sub_tree.items()) == 0:
@@ -176,7 +194,7 @@ def expression_parser(string):
 
 
 if __name__ == '__main__':
-    input = 'f(x-y+3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
+    input = 'f(x-3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
     p_tree = top.parseString(input)
     print(type(p_tree[0][0]))
     p_tree.pprint()
