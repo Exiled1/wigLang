@@ -32,18 +32,18 @@ EQ, LPAR, RPAR, COLON, COMMA = map(Suppress, "=():,")
 
 expr = Forward()
 
-ref_ = Word(alphas).setResultsName('var_ref')
-params = Group((LPAR + Group(Optional(delimitedList(expr))) + RPAR))('params')
+ref_ = Word(alphas)#('var_ref')
+params = ((LPAR + Optional(delimitedList(Group(expr))) + RPAR))('params')
 # funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
-funcCall = Group(Word(alphas).setResultsName('func_name') + params).setResultsName('func_call')
+funcCall = Group(Group(Word(alphas)('func_name') + params))('func_call')
 # if (x > 0)
 # else
 multOp = oneOf("* /")#.setResultsName('op')
 addOp = oneOf("+ -")#.setResultsName('op')
 numericLiteral = ppc.number
-operand = (funcCall | numericLiteral | ref_)
+operand = funcCall | numericLiteral | ref_
 
-arithExpr = Group(operand('lhs') + (multOp | addOp)('op') + operand('rhs'))('bin_op')
+arithExpr = (Group(operand('lhs') + (multOp | addOp)('op') + operand('rhs'))('bin_op'))
 arithExpr = arithExpr | (LPAR + arithExpr + RPAR)
 
 expr_rule = arithExpr | operand
@@ -56,6 +56,6 @@ def expression_parser(string):
 
 
 if __name__ == '__main__':
-    input = 'g(1 - x)'
+    input = 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
     p_tree = expr.parseString(input)
     print(p_tree.asDict())
