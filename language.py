@@ -133,7 +133,7 @@ class Binary:
         self.symbol = symbol
         self.func = func
     def __str__(self):
-        return f'{str(self.lhs)} {self.symbol} {str(self.rhs)}'
+        return f'({str(self.lhs)} {self.symbol} {str(self.rhs)})'
     def eval(self, scope):
         lhs = self.lhs
         rhs = self.rhs

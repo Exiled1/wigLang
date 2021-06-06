@@ -106,7 +106,16 @@ def unwrap(obj):
             return obj['var_ref']
     return None
 
-
+def flip_left(root):
+    if not (type(root) is dict):
+        return root
+    if 'bin_op' in root.keys():
+        root['bin_op'] = flip_left(root['bin_op'])
+        return root
+    tmp = root['lhs']
+    root['lhs'] = flip_left(root['rhs'])
+    root['rhs'] = tmp
+    return root
 
 def arith_action(tree):
     # if type(tree) is ParseResults:
@@ -146,7 +155,8 @@ def arith_action(tree):
                 left = True
         else:
             curr['op'] = term
-    sub_tree = dicts[0]
+    sub_tree = flip_left(dicts[0])
+    # sub_tree = dicts[0]
     if counter < 2 and counter > -1:
         return tree['bin_op']
     if len(sub_tree.items()) == 0:
@@ -166,7 +176,7 @@ def expression_parser(string):
 
 
 if __name__ == '__main__':
-    input = '0+f(x-y+3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
+    input = 'f(x-y+3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
     p_tree = top.parseString(input)
     print(type(p_tree[0][0]))
     p_tree.pprint()
