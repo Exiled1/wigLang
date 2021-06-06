@@ -31,9 +31,8 @@ ParserElement.enablePackrat()
 EQ, LPAR, RPAR, COLON, COMMA = map(Suppress, "=():,")
 
 expr = Forward()
-
 ref_ = Word(alphas)#('var_ref')
-params = ((LPAR + Optional(delimitedList(Group(expr))) + RPAR))('params')
+params = (LPAR + Optional(delimitedList(Group(expr))) + RPAR)('params')
 # funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
 funcCall = Group(Group(Word(alphas)('func_name') + params)('func_call'))
 # if (x > 0)
@@ -49,13 +48,13 @@ arithExpr = arithExpr | (LPAR + arithExpr + RPAR)
 expr_rule = arithExpr | operand
 
 expr << expr_rule
-
+top = Group(expr)('expr')
 
 def expression_parser(string):
-    return expr.parseString(string)
+    return top.parseString(string)
 
 
 if __name__ == '__main__':
-    input = 'f(x) * 4'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
-    p_tree = expr.parseString(input)
-    print(p_tree.asDict())
+    input = 'f()'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
+    p_tree = top.parseString(input)
+    print(p_tree.dump())

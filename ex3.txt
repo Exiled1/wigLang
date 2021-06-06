@@ -1,0 +1,22 @@
+{
+    int x;
+    int y;
+    int z;
+    x := 3;
+    y := 7;
+    {
+        int f(int y) {
+            return x * y;
+        };
+        int y;
+        y := 11;
+        {
+            int g(int x) {
+                return f(y);
+            };
+            int y;
+            y := 13;
+            z := g(2);
+        };
+    };
+};

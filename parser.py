@@ -60,6 +60,8 @@ def expression_transformer(root):
         else:
             root = {root[0]: root[1]}
     if type(root) is dict:
+        if 'expr' in root.keys():
+            return expression_transformer(root['expr'])
         for tag,child in root.items():
             if tag == 'func_call':
                 # child = child[0]
@@ -103,6 +105,7 @@ def parse_expression(exp_str):
         p_list = parsed.asList()
         if len(p_list) > 0:
             return Expression(p_list[0])
+            # return Expression(expression_transformer(p_dict))
         else:
             return None
     # print('parser dictionary', p_dict)
@@ -180,7 +183,9 @@ def parse_return(line):
     if match != None:
         groups = match.groups()
         return_expr = groups[1]
+        print(return_expr)
         return_value = parse_expression(return_expr)
+        print(return_value)
         return [return_value]
     return None
 

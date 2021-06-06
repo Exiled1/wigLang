@@ -27,8 +27,11 @@ class Assign:
         return f'{self.name} := {self.value};\n'
     def eval(self, scope):
         value = self.value
-        if type(value) is Expression or type(value) is Binary or type(value) is FunctionCall:
-            value = value.eval(scope) # This may be not poggers
+        # if type(value) is Expression or type(value) is Binary or type(value) is FunctionCall or type(value) is Thunk:
+        if not (type(value) is Function or type(value) is int):
+            value = value.eval(scope)# This may be not poggers
+            # if type(value) is Thunk:
+            #     value = value.eval(scope)
             # print('Evaled to ', value, type(value))
         return scope.set_var(self.name, value)
 
@@ -39,7 +42,7 @@ class Var:
         return self.name
     def eval(self, scope):
         value = scope.get_var(self.name)
-        print('Got value!', value)
+        # print('Got value!', value)
         return value
 
 class Block:
@@ -96,7 +99,7 @@ class Expression:
         result = self.child.eval(scope)
         if type(result) is int:
             return result
-        return Expression(result)
+        return result
 
 # x := f(x-1) + 4 * 3 - f(x*9)
 
@@ -122,8 +125,9 @@ class Binary:
     def __init__(self, lhs, rhs, symbol, func):
         lhs_t = type(lhs)
         rhs_t = type(rhs)
-        assert (lhs_t is FunctionCall or lhs_t is Expression or lhs_t is Binary or lhs_t is Var or lhs_t is int)
-        assert (rhs_t is FunctionCall or rhs_t is Expression or rhs_t is Binary or rhs_t is Var or rhs_t is int)
+        # print(lhs_t, rhs_t)
+        assert (lhs_t is FunctionCall or lhs_t is Expression or lhs_t is Binary or lhs_t is Var or lhs_t is int or lhs_t is Thunk)
+        assert (rhs_t is FunctionCall or rhs_t is Expression or rhs_t is Binary or rhs_t is Var or rhs_t is int or rhs_t is Thunk)
         self.lhs = lhs
         self.rhs = rhs
         self.symbol = symbol
@@ -131,13 +135,19 @@ class Binary:
     def __str__(self):
         return f'{str(self.lhs)} {self.symbol} {str(self.rhs)}'
     def eval(self, scope):
-        lhs = self.lhs.eval(scope) if not (type(self.lhs) is int or type(self.lhs) is str) else self.lhs
-        rhs = self.rhs.eval(scope) if not (type(self.rhs) is int or type(self.rhs) is str) else self.rhs
-        if type(lhs) is int and type(rhs) is int:
-            return self.func(lhs, rhs)
+        lhs = self.lhs
+        rhs = self.rhs
+        if not (type(lhs) is int):
+            # lhs = lhs.eval(scope)
+            return Binary(lhs.eval(scope),self.rhs,self.symbol,self.func).eval(scope)
+        if not (type(self.rhs) is int):
+            # rhs = rhs.eval(scope)
+            return Binary(lhs,rhs.eval(scope),self.symbol,self.func).eval(scope)
+        if (type(lhs) is int and type(rhs) is int):
+            return Expression(self.func(lhs, rhs))
         self.lhs = lhs
         self.rhs = rhs
-        return Binary(lhs,rhs,self.symbol,self.func) # this could cause reference issues
+        return Expression(Binary(lhs,rhs,self.symbol,self.func)) # this could cause reference issues
 
 # (a + b + c) / (c * (c-a) / 2)
 
@@ -179,7 +189,7 @@ class Function:
         for i in range(len(thunks)):
             arg_type, arg_name = self.param_list[i]
             arg_val = thunks[i]
-            scope = scope.set_var(arg_name,arg_val)
+            scope = scope.set_var(arg_name,arg_val.bound())
         scope = self.code_block.eval(scope)
 
         return_value = None

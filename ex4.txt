@@ -1,0 +1,18 @@
+{
+    int y;
+    int z;
+    z := 0;
+    y := 7;
+    {
+        int f(int a) {
+            y := a+1;
+            return a+y;
+        };
+        int g(int x) {
+            y := f(x+1)+1;
+            z := f(x - y);
+            return z+1;
+        };
+        z := g(y*2);
+    };
+};

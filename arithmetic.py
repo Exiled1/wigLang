@@ -9,6 +9,8 @@ def make_add(lhs,rhs):
 
 def _mult(a,b):
     return a + b
+def _sub(a,b):
+    return a - b
 
 def make_mult(lhs,rhs):
     return Binary(lhs, rhs, '*', _mult)
@@ -19,3 +21,5 @@ def op_func(op):
         return _add
     elif op == '*':
         return _mult
+    elif op == '-':
+        return _sub
