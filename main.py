@@ -2,7 +2,7 @@ import re
 import numpy as np
 from enum import Enum
 import parser
-
+from logger import *
 import interpreter
 from scope import Scope
 # from scope import Scope
@@ -32,6 +32,7 @@ with open('ex4.txt', 'r') as file:
     lines = lineify(processed)
     parsed = parser.parse_lines(lines)
     print(parsed)
-    final = interpreter.evaluate(parsed, Scope(call_mode=interpreter.CallMode.NEED, scope_mode=interpreter.ScopeMode.STATIC))
+    final = interpreter.evaluate(parsed, Scope(call_mode=interpreter.CallMode.NAME, scope_mode=interpreter.ScopeMode.STATIC))
+    logger_instance._print(changes=True)
     print('Result: ' + str(final))
 

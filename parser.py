@@ -183,9 +183,7 @@ def parse_return(line):
     if match != None:
         groups = match.groups()
         return_expr = groups[1]
-        print(return_expr)
         return_value = parse_expression(return_expr)
-        print(return_value)
         return [return_value]
     return None
 
