@@ -1,15 +1,16 @@
 {
     {
-        int x;
-        int y := 1;
+        int x := 1;
+        int y := 2;
         {
             int f(int x)
             {
                 int z := 69;
                 x := 10;
+                return 2;
             };
             
-            x := f(x+2, 4+5, 2+1, f(x+1)) * 4;
+            x := f(x+2) * 4;
         };
     };
 };

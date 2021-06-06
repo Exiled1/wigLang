@@ -123,10 +123,12 @@ def parse_declaration(line):
         decl = Declare(type_,name)
         ass = Assign(name,value) 
 
+        # if name and value:
+        #     res = parse_expression(value)
+        #     if type(res) is Expression:
+        #         ass = Assign(name,res)
         if name and value:
-            res = parse_expression(value)
-            if type(res) is Expression:
-                ass = Assign(name,res)
+            ass = Assign(name,parse_expression(value))
 
         ret.append(decl) if type_ and name else ''
         ret.append(ass) if name and value else ''
@@ -165,9 +167,22 @@ def parse_function(line):
         if not (return_type and name and params):
             return None
         fun = Function(return_type, name, params)
-        return [Declare('{.}',name),Assign(name,'λ'),fun]
+        return [Declare('{.}',name),Assign(name,fun),fun]
     else:
         return None
+
+def is_return(line):
+    return parse_return(line) != None
+
+def parse_return(line):
+    return_statement_rule = r'(return)\ +(.+);'
+    match = re.match(return_statement_rule, line)
+    if match != None:
+        groups = match.groups()
+        return_expr = groups[1]
+        return_value = parse_expression(return_expr)
+        return [return_value]
+    return None
 
 def preprocess(source):
     lines = source.split('\n')
@@ -182,6 +197,8 @@ def identify_line(line):
         return parse_declaration(line)
     elif is_function(line):
         return parse_function(line)
+    elif is_return(line):
+        return parse_return(line)
     else:
         return None
 
@@ -206,10 +223,17 @@ def parse_lines(lines):
         elif line == '}':
             block = block.super_block
             depth -= 1
+            function = None
             continue
         ast_node = identify_line(line)
         if is_function(line):
             function = ast_node[2]
+        if is_return(line):
+            if function:
+                function.return_expression = ast_node[0]
+            else:
+                print('Error! Cannot have a return statement outside a function!')
+            continue
         block.add(ast_node) if ast_node != None else ''
     if top_block != block and depth == 0:
         print('Expecting closing \'}\'!')

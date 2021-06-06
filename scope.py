@@ -1,10 +1,11 @@
 import copy
-
+from interpreter import *
+from language import *
 class Scope:
     #Defaults to static call by value.
-    def __init__(self, CallMode="static", ScopeMode="cbv",Variables=[]):
-        self.callMode = CallMode
-        self.scopeMode = ScopeMode
+    def __init__(self, call_mode=CallMode.VALUE, scope_mode=ScopeMode.STATIC,Variables=[]):
+        self.call_mode = call_mode
+        self.scope_mode = scope_mode
         self.variables = []
         # make a dictionary of possible instructions, takes functions, declarations.
 
@@ -19,9 +20,14 @@ class Scope:
 
     def push_var(self, name, value):
         self.variables.insert(0, (name,value))
-        print(self)
+        print(self, f'<push ({name}:{str(value)})>')
         return self
 
+    def get_var(self,name):
+        idx = self.find_index(name)
+        if idx < 0:
+            return None
+        return self.variables[idx][1]
 
     # TODO, make copy method.
     def set_var(self, name, value):
@@ -31,14 +37,17 @@ class Scope:
         else:
             print(f'{name} is not declared!')
             self.push_var(name,value)
+        print(self, f'<assign ({name}:{str(value)})>')
         return self
     
 
     def pop_var(self, name):
         idx = self.find_index(name)
+        value = None
         if idx != -1:
-            self.variables.remove(self.variables[idx])
-        print(self)
+            value = self.variables[idx]
+            self.variables.remove(value)
+        print(self, f'<pop ({name}:{str(value[1])})>')
         return self
     
 
@@ -47,7 +56,7 @@ class Scope:
     # from what I can see doing __deepcopy__ will make this class define its own method of deep copying.
     # to use: newScopeObj = copy.deepcopy(oldScopeObj)
     def __deepcopy__(self, memo):
-        copiedScope = Scope(self.callMode, self.scopeMode, copy.deepcopy(self.variables, memo))
+        copiedScope = Scope(self.call_mode, self.scope_mode, copy.deepcopy(self.variables, memo))
         return copiedScope
         # Should return a new scope object with the same variable stack inside of it.
 
@@ -62,9 +71,9 @@ class Scope:
             keyPairList.append(kpStr)
         # todo in here.
         retStr = ''
-        # retStr = f'Call Mode: {self.callMode}\nScope Mode: {self.scopeMode}\n'
+        # retStr = f'Call Mode: {self.call_mode}\nScope Mode: {self.scope_mode}\n'
         retStr += '[' + ', '.join(keyPairList) + ']'
         return retStr
-    # newScopr =  Scope(self.CallMode, self....)
+    # newScopr =  Scope(self.call_mode, self....)
     # newScope.variables = [*self.varaibles]
     # newScope
