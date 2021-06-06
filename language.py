@@ -125,7 +125,7 @@ class Binary:
     def __init__(self, lhs, rhs, symbol, func):
         lhs_t = type(lhs)
         rhs_t = type(rhs)
-        # print(lhs_t, rhs_t)
+        print(lhs_t, rhs_t)
         assert (lhs_t is FunctionCall or lhs_t is Expression or lhs_t is Binary or lhs_t is Var or lhs_t is int or lhs_t is Thunk)
         assert (rhs_t is FunctionCall or rhs_t is Expression or rhs_t is Binary or rhs_t is Var or rhs_t is int or rhs_t is Thunk)
         self.lhs = lhs

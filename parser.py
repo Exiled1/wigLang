@@ -84,6 +84,7 @@ def expression_transformer(root):
             elif type(child) is int:
                 return child
             elif tag == 'bin_op':
+                print(child)
                 lhs = expression_transformer(child['lhs'])
                 op = child['op']
                 rhs = expression_transformer(child['rhs'])
@@ -95,7 +96,7 @@ def expression_transformer(root):
     elif type(root) is int:
         return root
     else:
-        print('could not parse', repr(root))
+        print('could not parse', type(root), repr(root))
 
 
 def parse_expression(exp_str):
