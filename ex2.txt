@@ -6,6 +6,7 @@
             int f(int x)
             {
                 int z := 69;
+                y := x;
                 x := 10;
                 return 2;
             };

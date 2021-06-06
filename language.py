@@ -85,6 +85,8 @@ class Block:
 # Expr holds itself and (maybe its scope)
 class Expression:
     def __init__(self, child):
+        if type(child) is str:
+            child = Var(child)
         self.child = child
     def __str__(self):
         return str(self.child)

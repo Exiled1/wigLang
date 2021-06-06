@@ -32,6 +32,6 @@ with open('ex2.txt', 'r') as file:
     lines = lineify(processed)
     parsed = parser.parse_lines(lines)
     print(parsed)
-    final = interpreter.evaluate(parsed, Scope('',''))
+    final = interpreter.evaluate(parsed, Scope(interpreter.CallMode.NAME, interpreter.ScopeMode.STATIC))
     print('Result: ' + str(final))
 
