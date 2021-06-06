@@ -8,7 +8,8 @@ def make_add(lhs,rhs):
     return Binary(lhs, rhs, '+', _add)
 
 def _mult(a,b):
-    return a + b
+    return a * b
+
 def _sub(a,b):
     return a - b
 

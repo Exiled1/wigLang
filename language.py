@@ -189,7 +189,8 @@ class Function:
         for i in range(len(thunks)):
             arg_type, arg_name = self.param_list[i]
             arg_val = thunks[i]
-            scope = scope.set_var(arg_name,arg_val.bound())
+            arg_val.bind(arg_name)
+            # scope = scope.set_var(arg_name,arg_val.bound())
         scope = self.code_block.eval(scope)
 
         return_value = None
