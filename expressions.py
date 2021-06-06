@@ -139,9 +139,10 @@ def arith_action(tree):
                     dicts.append(curr)
                     # print(curr['rhs'])
                     break
-                curr['rhs'] = { 'lhs' : term }
+                new_curr = { 'lhs' : term }
+                curr['rhs'] = {'bin_op':new_curr}
                 dicts.append(curr)
-                curr = curr['rhs']
+                curr = new_curr
                 left = True
         else:
             curr['op'] = term
@@ -167,6 +168,7 @@ def expression_parser(string):
 if __name__ == '__main__':
     input = '0+f(x-y+3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
     p_tree = top.parseString(input)
+    print(type(p_tree[0][0]))
     p_tree.pprint()
     # print(p_tree.asDict())
     # print(p_tree.dump())

@@ -10,7 +10,7 @@
         };
         int g(int x) {
             y := f(x+1)+1;
-            z := f(x - y + 3);
+            z := 0+f(x-y+3+4);
             return z+1;
         };
         z := g(y*2);

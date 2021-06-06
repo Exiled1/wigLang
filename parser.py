@@ -1,6 +1,7 @@
 import re
 import numpy as np
 from language import *
+from pyparsing import ParseResults
 # from pyparsing import Forward, Word, alphas, alphanums, nums, ZeroOrMore, Literal, Group, Optional, other
 import expressions
 import arithmetic
@@ -43,7 +44,6 @@ Expression(FunctionCall('f', [Expression(Add(Var('x'), 1))] ))
 '''
 
 def expression_transformer(root):
-
     if type(root) is list:
         if len(root) == 1:
             # print('singleton list', root)
@@ -65,7 +65,7 @@ def expression_transformer(root):
         for tag,child in root.items():
             if tag == 'func_call':
                 # child = child[0]
-                # print(child)
+                # print('child!',child)
                 func_name = child['func_name']
                 params = []
                 assert type(child['params']) is list
@@ -84,10 +84,12 @@ def expression_transformer(root):
             elif type(child) is int:
                 return child
             elif tag == 'bin_op':
-                print(child)
+                # print(repr(child))
                 lhs = expression_transformer(child['lhs'])
                 op = child['op']
                 rhs = expression_transformer(child['rhs'])
+                
+                # print('arith ', lhs, op, rhs)
                 return Binary(lhs, rhs, op, arithmetic.op_func(op))
             else:
                 print('could not find', tag)
@@ -95,20 +97,31 @@ def expression_transformer(root):
         return Var(root)
     elif type(root) is int:
         return root
+    elif type(root) is ParseResults:
+        return expression_transformer(root[0])
     else:
         print('could not parse', type(root), repr(root))
 
 
 def parse_expression(exp_str):
     parsed = expressions.expression_parser(exp_str)
-    p_dict = parsed.asDict()
-    if len(p_dict.items()) == 0:
-        p_list = parsed.asList()
-        if len(p_list) > 0:
-            return Expression(p_list[0])
-            # return Expression(expression_transformer(p_dict))
-        else:
-            return None
+    # p_dict = parsed.asDict()
+    p_dict = parsed[0][0]
+    # return Expression(expression_transformer(p_dict))
+    # if not (type(p_dict) is dict or type(p_dict) is list):
+    #     return Expression(expression_transformer(p_dict))
+    # if not (type(p_dict) is dict):
+    #     p_dict = parsed.asDict()
+    # print(type(p_dict), p_dict)
+    if type(p_dict) is dict:
+        if len(p_dict.items()) == 0:
+            print('oof')
+            p_list = parsed.asList()
+            if len(p_list) > 0:
+                return Expression(p_list[0])
+                # return Expression(expression_transformer(p_dict))
+            else:
+                return None
     # print('parser dictionary', p_dict)
     result = Expression(expression_transformer(p_dict))
     # print('result', result)
