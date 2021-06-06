@@ -3,7 +3,7 @@ import numpy as np
 from language import *
 # from pyparsing import Forward, Word, alphas, alphanums, nums, ZeroOrMore, Literal, Group, Optional, other
 import expressions
-
+import arithmetic
 def flatten(lis):
     arr = np.array(lis)
     flat = arr.flatten()
@@ -20,13 +20,15 @@ def flatten(lis):
         
     ])
     
-    
+
 ]
 # function call
-# 
+#
+
 '''
 
 '''
+
 2 + x + 4 * 9
 Add(2, Add(Var(x), Mult(4, 9)))
 
@@ -59,23 +61,70 @@ Expression(FunctionCall('f', [Expression(Add(Var('x'), 1))] ))
 #     return parsed_expression
 
 def expression_transformer(root):
-    for tag,child in root.items():
-        if tag == 'func_call':
-            func_name = child['func_name']
-            params = [expression_transformer(p) for p in child['params']]
-            func = Function(func_name,params)
-            return func
-        elif tag == '':
-            return None
+    # for i,item in enumerate(root):
+    #     if isinstance(item, str) or isinstance(item, int):
+    #         print(i,item)
+    #     else:
+    #         # if item.getName() == 'func_call':
+    #         #     print('FUNCTION')
+    #         print(i, item.getName(), item)
+    # return None
+    if type(root) is int:
+        return root
+    if type(root) is tuple:
+        if type(root[0]) is int:
+            root = root[1]
+        else:
+            root = {root[0]: root[1]}
+    print(repr(root))
+    if type(root) is dict:
+        for tag,child in root.items():
+            if tag == 'func_call':
+                # print(child)
+                func_name = child['func_name']
+                # print('params', child['params'].items())
+                # params = [expression_transformer(p) for p in child['params']]
+                params = []
+                for p in child['params']:
+                    if not (type(p) is str):
+                        params.append(expression_transformer(p))
+                        continue
+                    # print(type(p), repr(p), type(child['params'][p]), repr(child['params'][p]))
+                    node = {p: child['params'][p]}
+                    params.append(expression_transformer(node))
+                # print('afterparams ', params)
+                func = FunctionCall(func_name,params)
+                return func
+            elif tag == 'var_ref':
+                return Var(child)
+            elif tag == 'num':
+                return child
+            elif tag == 'bin_op':
+                print('binexp.   ', repr(child))
+                lhs = expression_transformer(child['lhs'][0])
+                op = child['op']
+                rhs = expression_transformer(child['rhs'][0])
+                print('binary op',child['lhs'],child['rhs'], lhs, op, rhs)
+                return Binary(lhs, rhs, op, arithmetic.op_func(op))
+            else:
+                print('could not find', tag)
+                return None
+    elif type(root) is str:
+        return Var(root)
+    elif type(root) is int:
+        return root
+    else:
+        print('could not parse', repr(root))
+
 
 def parse_expression(exp_str):
     parsed = expressions.expression_parser(exp_str)
-    print(parsed.asDict())
-    print(parsed.asList())
-    print(parsed.dump())
+    # print(parsed.asDict())
+    # print(parsed.asList())
+    # print(parsed.dump())
 
-    # expression_transformer(parsed.asDict())
-    return None
+    # return Expression(expression_transformer(parsed.asDict()))
+    return Expression(expression_transformer(parsed.asDict()))
 
 
 def parse_declaration(line):

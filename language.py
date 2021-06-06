@@ -71,6 +71,7 @@ class Block:
         for var in self.local_variables:
             scope = scope.pop_var(var)
         return scope
+
 # Expr holds itself and (maybe its scope)
 class Expression:
     def __init__(self, child):
@@ -90,12 +91,13 @@ class FunctionCall: # f(x+1)
         csl = ', '.join(str(param) for param in self.params)
         # if len(self.params) == 1:
         #     csl = str(self.params[0]) 
-        return f'{self.name} ({csl})'
+        return f'{self.name}({csl})'
     def eval(self, scope):
         # Call-By-... #
         func = scope.get_var(self.name)
         result = func.eval(scope, argument_vals=self.params)
         return result
+
 class Binary:
     def __init__(self, lhs, rhs, symbol, func):
         self.lhs = lhs

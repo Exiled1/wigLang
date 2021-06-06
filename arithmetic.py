@@ -12,3 +12,10 @@ def _mult(a,b):
 
 def make_mult(lhs,rhs):
     return Binary(lhs, rhs, '*', _mult)
+
+
+def op_func(op):
+    if op == '+':
+        return _add
+    elif op == '*':
+        return _mult
