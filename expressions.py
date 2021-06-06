@@ -35,7 +35,7 @@ expr = Forward()
 ref_ = Word(alphas)#('var_ref')
 params = ((LPAR + Optional(delimitedList(Group(expr))) + RPAR))('params')
 # funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
-funcCall = Group(Group(Word(alphas)('func_name') + params))('func_call')
+funcCall = Group(Group(Word(alphas)('func_name') + params)('func_call'))
 # if (x > 0)
 # else
 multOp = oneOf("* /")#.setResultsName('op')
@@ -56,6 +56,6 @@ def expression_parser(string):
 
 
 if __name__ == '__main__':
-    input = 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
+    input = 'f(x) * 4'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
     p_tree = expr.parseString(input)
     print(p_tree.asDict())

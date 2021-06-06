@@ -44,51 +44,37 @@ Expression(FunctionCall('f', [Expression(Add(Var('x'), 1))] ))
 
 def expression_transformer(root):
 
-    # print(repr(root))
     if type(root) is list:
         if len(root) == 1:
+            # print('singleton list', root)
             root = root[0]
-            print('singleton list', root)
+            return expression_transformer(root)
         elif len(root) == 0:
             return None
         else:
             print('Cannot transform empty list!', root)
-    # print(repr(root))
 
-
-    # if type(root) is int:
-    #     return root
     if type(root) is tuple:
         if type(root[0]) is int:
             root = root[1]
         else:
             root = {root[0]: root[1]}
-    # print(repr(root))
     if type(root) is dict:
         for tag,child in root.items():
             if tag == 'func_call':
-                child = child[0]
-                print(child)
+                # child = child[0]
+                # print(child)
                 func_name = child['func_name']
-                # print('params', child['params'].items())
-                # params = [expression_transformer(p) for p in child['params']]
                 params = []
-                # print('FUNCTIONCALL', child['params'])
                 assert type(child['params']) is list
                 for p in child['params']:
                     if type(p) is dict:
-                        print('dict!', p)
+                        # print('dict!', p)
                         for di in p:
                             params.append(expression_transformer((di,p[di])))
-                    # elif type(p) is str:
-                    #     print('string!')
-                    #     node = {p:child['params'][p]}
-                    #     params.append(expression_transformer(node))
-                    # else:
-                    #     print('els!', type(p))
-                    #     res = expression_transformer(p)
-                    #     params.append(res)
-                # print('afterparams ', params)
+                    else:
+                        # print('PTYPE!', type(p),p)
+                        params.append(expression_transformer(p))
                 func = FunctionCall(func_name,params)
                 return func
             elif type(child) is str:
@@ -96,15 +82,12 @@ def expression_transformer(root):
             elif type(child) is int:
                 return child
             elif tag == 'bin_op':
-                # print('binexp.   ', repr(child))
                 lhs = expression_transformer(child['lhs'])
                 op = child['op']
                 rhs = expression_transformer(child['rhs'])
-                # print('binary op',child['lhs'],child['rhs'], lhs, op, rhs)
                 return Binary(lhs, rhs, op, arithmetic.op_func(op))
             else:
                 print('could not find', tag)
-                # return None
     elif type(root) is str:
         return Var(root)
     elif type(root) is int:
@@ -115,14 +98,14 @@ def expression_transformer(root):
 
 def parse_expression(exp_str):
     parsed = expressions.expression_parser(exp_str)
-    # print(parsed.asDict())
-    # print(parsed.asList())
-    # print(parsed.dump())
-
-    # return Expression(expression_transformer(parsed.asDict()))
     p_dict = parsed.asDict()
-    # print('given ', exp_str)
-    print('parser dictionary', p_dict)
+    if len(p_dict.items()) == 0:
+        p_list = parsed.asList()
+        if len(p_list) > 0:
+            return Expression(p_list[0])
+        else:
+            return None
+    # print('parser dictionary', p_dict)
     result = Expression(expression_transformer(p_dict))
     # print('result', result)
     return result
