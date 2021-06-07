@@ -1,0 +1,22 @@
+{   
+    int y;
+    int z;
+    y := 7;
+     {   
+        int f(int a) {
+            y := a+9;
+            return (y+a);
+        };
+        int g(int x) {
+            if (x > 1) then {
+                x := x * 69;
+            } else {
+                x := 1;
+            }
+            y := f(x+4)+1;
+            z := f(x-y+3);
+            return (z+2);
+        };
+        z := g(y*2);
+    };
+};

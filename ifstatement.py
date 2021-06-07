@@ -1,45 +1,63 @@
-
-import pyparsing as pp
+from pyparsing import (
+    CaselessKeyword,
+    Suppress,
+    Word,
+    alphas,
+    alphanums,
+    nums,
+    Optional,
+    Group,
+    oneOf,
+    Forward,
+    infixNotation,
+    opAssoc,
+    dblQuotedString,
+    delimitedList,
+    Combine,
+    Literal,
+    QuotedString,
+    ParserElement,
+    ZeroOrMore,
+    ParseResults,
+    pyparsing_common as ppc,
+)
 '''
 if expression block {elseif expression block} [else block] 
 '''
 
+def func_action(tree):
+    # print(tree[0].asDict())
+    func_tree = tree[0]['func_call']
+    sub_tree = {}
+    sub_tree['func_name'] = func_tree['func_name']
+    sub_tree['params'] = [p[0] for p in func_tree['params']]
+    # print(sub_tree)
+    return {'func_call': sub_tree}
+    # return tree[0].asDict()
+
+def iden_action(tree):
+    return [tree[0][0]]# { 'var_ref': tree[0][0] }
+
+# ------------------- GRAMMAR BEGIN -----------------
+
 # Make some useful tokens to use in the parser.
-ppc = pp.pyparsing_common
-number = ppc.number
-exp = pp.Forward()
+ParserElement.enablePackrat()
 
-# these are identifiers for the actual if statement.
-LPAR, RPAR, EQ, COMMA, SEMI, COLON = map(
-    pp.Suppress, "()=,;:"
-)
-OPT_SEMI = pp.Optional(SEMI).suppress() # Optional semicolon, jic.
+EQ, LPAR, RPAR, COLON, COMMA = map(Suppress, "=():,")
 
 
-# make a list of if statement keywords. called it kw cuz I have to 
-kw = {
-    keyword.upper(): pp.Keyword(keyword)
-    for keyword in '''\
-    if then elseif else true false
-    '''.split()
-}
+expr = Forward()
+ref_ = Group(Word(alphas)('var_ref')).setParseAction(iden_action)
+params = (LPAR + Optional(delimitedList(Group(expr))) + RPAR)('params')
+# funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
+funcCall = Group(Group(Word(alphas)('func_name') + params)('func_call'))
+funcCall = funcCall | (LPAR + funcCall + RPAR)
+funcCall = funcCall.setParseAction(func_action)
+# if (x > 0)
+# else
+multOp = oneOf("* /")#.setResultsName('op')
+addOp = oneOf("+ -")#.setResultsName('op')
+numericLiteral = ppc.number
+operand = funcCall | numericLiteral | ref_
 
-vars().update(kw) # update the keywords into a dictionary.
-
-# Grab they keywords and make their token names conditional_keyword, matches out of the keywords in the keyword list.
-cond_keyword = pp.MatchFirst(kw.values()).setName("<conditional_keyword>")
-
-
-statement = pp.Forward()
-exp_atom = (
-    kw.TRUE
-    | kw.FALSE
-    | number
-    | functioncall
-    | var
-)
-if_stmt = (
-    kw.IF
-    + exp
-
-)
+# -------------- GRAMMAR END, CODE START -------------

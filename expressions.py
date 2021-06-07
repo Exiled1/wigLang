@@ -26,11 +26,22 @@ from pyparsing import (
     ZeroOrMore,
     ParseResults,
     pyparsing_common as ppc,
+    Keyword,
+    MatchFirst
 )
 
 ParserElement.enablePackrat()
 
 EQ, LPAR, RPAR, COLON, COMMA = map(Suppress, "=():,")
+# keywords for the if statement
+kw = {
+    k.upper(): Keyword(k)
+    for k in """
+    if else false true then
+    """.split()
+}
+vars().update(kw) # update dict keywords to work normally.
+cond_keyword = MatchFirst(kw.values()).setName("<conditional keyword>")
 
 
 def func_action(tree):
@@ -47,50 +58,8 @@ def func_action(tree):
 def iden_action(tree):
     return [tree[0][0]]# { 'var_ref': tree[0][0] }
 
-expr = Forward()
-ref_ = Group(Word(alphas)('var_ref')).setParseAction(iden_action)
-params = (LPAR + Optional(delimitedList(Group(expr))) + RPAR)('params')
-# funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
-funcCall = Group(Group(Word(alphas)('func_name') + params)('func_call'))
-funcCall = funcCall | (LPAR + funcCall + RPAR)
-funcCall = funcCall.setParseAction(func_action)
-# if (x > 0)
-# else
-multOp = oneOf("* /")#.setResultsName('op')
-addOp = oneOf("+ -")#.setResultsName('op')
-numericLiteral = ppc.number
-operand = funcCall | numericLiteral | ref_
-
-class ExpressionBuilder:
-    def __init__(self):
-        self.expression_stack = [{}]
-        self.current = self.expression_stack[0]
-        self.counter = 0
-        self.left = True
-        self.done = False
-    
-    def add(self, term):
-        if self.done:
-            print('error! done!')
-        if self.counter % 2 == 0:
-            if self.left:
-                self.current['lhs'] = term
-            else:
-                if type(term) is int or type(term) is str:
-                    self.current['rhs'] = term
-                elif type(term) is list:
-                    if type(term[0]) is int or type(term[0]) is str:
-                        self.current['rhs'] = term
-                else:
-                    self.expression_stack.push({})
-                    self.current['rhs'] = self.expression_stack[0]
-            self.left = not left
-        else:
-            assert type(term) is str
-            self.current['op'] = term
-        self.counter += 1
-    def get_dict(self):
-        return self.expression_stack[-1]
+# ------------- START Function/expression 
+# ----------- END Function/expression grammar pt 1. 
 
 def unwrap(obj):
     ot = type(obj)
@@ -128,17 +97,11 @@ def flip_right(root):
     root['lhs'] = tmp
     return root
 
-
 def arith_action(tree):
-    # if type(tree) is ParseResults:
-    #     print(tree.asDict())
-    # if type(tree['bin_op']) is ParseResults:
-    #     print(tree['bin_op'].asDict())
     counter = -1
     left = False
     dicts = []
     curr = {}
-    print(type(tree['bin_op']))
     tmp = tree['bin_op']
     tree['bin_op'] = []
     for t in tmp:
@@ -152,15 +115,6 @@ def arith_action(tree):
             if left:
                 curr['rhs'] = term
             else:
-                # if type(term) is int or type(term) is str:
-                #     curr['rhs'] = term
-                #     dicts.append(curr)
-                #     continue
-                # elif type(term) is list:
-                #     if type(term[0]) is int or type(term[0]) is str:
-                #         curr['rhs'] = term[0]
-                #         dicts.append(curr)
-                #         continue
                 if len(tree['bin_op']) == counter+1:
                     curr['lhs'] = term
                     dicts.append(curr)
@@ -180,23 +134,50 @@ def arith_action(tree):
     if len(sub_tree.items()) == 0:
         return tree
     return {'bin_op': sub_tree}
-# arithExpr = (Group(operand('lhs') + ZeroOrMore((multOp | addOp)('op') + operand('rhs')('rhs')))('bin_op'))
-arithExpr = (Group(operand + ZeroOrMore((multOp | addOp) + operand))('bin_op'))
+
+def condition_action(tree):
+    sub_tree = tree.asDict()
+    return {'condition': sub_tree['condition']['expr'][0]}
+
+expr = Forward()
+ref_ = Group(Word(alphas)('var_ref')).setParseAction(iden_action)
+params = (LPAR + Optional(delimitedList(Group(expr))) + RPAR)('params')
+# funcCall = Group(Word(alphas) + Group(LPAR + params + RPAR)).setName('func_call')
+funcCall = Group(Group(Word(alphas)('func_name') + params)('func_call'))
+funcCall = funcCall | (LPAR + funcCall + RPAR)
+funcCall = funcCall.setParseAction(func_action)
+# if (x > 0)
+# else
+multOp = oneOf("* /")#.setResultsName('op')
+addOp = oneOf("+ -")#.setResultsName('op')
+compareOp = oneOf('< > =')
+numericLiteral = ppc.number
+operand = funcCall | numericLiteral | ref_
+
+
+arithExpr = (Group(operand + ZeroOrMore((multOp | addOp | compareOp) + operand))('bin_op'))
 arithExpr = arithExpr | (LPAR + arithExpr + RPAR)
 arithExpr = arithExpr.setParseAction(arith_action)
 expr_rule =  arithExpr | operand
 
 expr << expr_rule
+
 top = Group(expr)('expr')
+
+if_stmt = ('if' + Group(top)('condition') + 'then').setParseAction(condition_action)
 
 def expression_parser(string):
     return top.parseString(string)
 
 
 if __name__ == '__main__':
-    input = 'f(x-3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
-    p_tree = top.parseString(input)
-    print(type(p_tree[0][0]))
-    p_tree.pprint()
+    # input = 'f(x-3+4)'# 'f(x+2, 2+1, 4+5, f(x+1))'# 'g(2+3, f(x+1))'
+    # p_tree = top.parseString(input)
+    # print(type(p_tree[0][0]))
+    # p_tree.pprint()
     # print(p_tree.asDict())
     # print(p_tree.dump())
+
+    input = 'if 69 < f(x,g(x)) then'
+    p_tree = if_stmt.parseString(input)
+    p_tree.pprint()

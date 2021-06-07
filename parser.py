@@ -5,6 +5,8 @@ from pyparsing import ParseResults
 # from pyparsing import Forward, Word, alphas, alphanums, nums, ZeroOrMore, Literal, Group, Optional, other
 import expressions
 import arithmetic
+
+
 def flatten(lis):
     arr = np.array(lis)
     flat = arr.flatten()
@@ -79,6 +81,9 @@ def expression_transformer(root):
                         params.append(expression_transformer(p))
                 func = FunctionCall(func_name,params)
                 return func
+            elif tag == 'condition':
+                condition = expression_transformer(child)
+                return Conditional(condition)
             elif type(child) is str:
                 return Var(child)
             elif type(child) is int:
@@ -188,6 +193,21 @@ def parse_function(line):
     else:
         return None
 
+def parse_conditional(line):
+    try:
+        parsed = expressions.if_stmt.parseString(line)
+        p_dict = parsed[0]
+        return expression_transformer(p_dict)
+    except:
+        return None
+    return None
+
+def is_conditional(line):
+    return parse_conditional(line) != None
+
+def is_else(line):
+    return line.strip() == 'else'
+
 def is_return(line):
     return parse_return(line) != None
 
@@ -216,6 +236,8 @@ def identify_line(line):
         return parse_function(line)
     elif is_return(line):
         return parse_return(line)
+    elif is_conditional(line):
+        return parse_conditional(line)
     else:
         return None
 
@@ -223,17 +245,19 @@ def parse_lines(lines):
     depth = 1
     block = Block([],depth)
     function = None
+    conditional = None
     top_block = block
+    capture_block = None
     for line in lines:
         if is_block(line):
             depth += 1
             new_block = Block([],depth)
-            if function is None:
+            if capture_block is None:
                 block.add(new_block)
             else:
-                function.code_block = new_block
-                # function.code_block.depth -= 1
-                # depth -= 1
+                capture_block(new_block)
+                capture_block = None
+                # function = None
             new_block.super_block = block
             block = new_block
             continue
@@ -243,11 +267,27 @@ def parse_lines(lines):
             function = None
             continue
         ast_node = identify_line(line)
+        if is_conditional(line):
+            conditional = ast_node
+            def set_cons(cond, block):
+                cond.set_consequent(block)
+            capture_block = lambda block: set_cons(conditional, block)
+        if is_else(line) and conditional != None:
+            # conditional = conditional
+            def set_alt(cond, block):
+                cond.set_alternative(block)
+                conditional = None
+            capture_block = lambda block: set_alt(conditional, block)
+
         if is_function(line):
             function = ast_node[2]
+            def set_func_block(function, block):
+                function.code_block = block
+            capture_block = lambda block: set_func_block(function, block)
         if is_return(line):
             if function:
                 function.return_expression = ast_node[0]
+                function = None
             else:
                 print('Error! Cannot have a return statement outside a function!')
             continue

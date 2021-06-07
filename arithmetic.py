@@ -16,6 +16,10 @@ def _sub(a,b):
 def make_mult(lhs,rhs):
     return Binary(lhs, rhs, '*', _mult)
 
+def _gt(a,b):
+    return a > b
+def _lt(a,b):
+    return a < b
 
 def op_func(op):
     if op == '+':
@@ -24,3 +28,7 @@ def op_func(op):
         return _mult
     elif op == '-':
         return _sub
+    elif op == '>':
+        return _gt
+    elif op == '<':
+        return _lt

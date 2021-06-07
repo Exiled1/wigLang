@@ -101,6 +101,30 @@ class Expression:
             return result
         return result
 
+class Conditional:
+    def __init__(self, condition):
+        self.condition = condition
+        self.consequent = None
+        self.alternative = None
+    def __str__(self):
+        cons_str = str(self.consequent)
+        alt_str = str(self.alternative)
+        tabs = '    '.join('' for i in range(self.consequent.depth))
+        return f'if {str(self.condition)} then \n{cons_str} {tabs} else\n{alt_str}'
+    def eval(self,scope):
+        cond = self.condition.eval(scope)
+        print(cond)
+        if cond:
+            self.consequent.eval(scope)
+        else:
+            self.alternative.eval(scope)
+        return scope
+    def set_consequent(self, consequent):
+        self.consequent = consequent
+    def set_alternative(self, alternative):
+        self.alternative = alternative
+
+
 # x := f(x-1) + 4 * 3 - f(x*9)
 
 class FunctionCall: # f(x+1)
@@ -121,30 +145,37 @@ class FunctionCall: # f(x+1)
         result_scope.pop_var('ret')
         return result
 
+def is_expr_prim(e):
+    return type(e) is int or type(e) is bool
+def is_expr_node(e):
+    return type(e) is FunctionCall or type(e) is Expression or type(e) is Binary or type(e) is Var or type(e) is Thunk or is_expr_prim(e)
 class Binary:
     def __init__(self, lhs, rhs, symbol, func):
-        lhs_t = type(lhs)
-        rhs_t = type(rhs)
-        # print(lhs_t, rhs_t)
-        assert (lhs_t is FunctionCall or lhs_t is Expression or lhs_t is Binary or lhs_t is Var or lhs_t is int or lhs_t is Thunk)
-        assert (rhs_t is FunctionCall or rhs_t is Expression or rhs_t is Binary or rhs_t is Var or rhs_t is int or rhs_t is Thunk)
         self.lhs = lhs
         self.rhs = rhs
         self.symbol = symbol
         self.func = func
+        lhs_t = type(lhs)
+        rhs_t = type(rhs)
+        print(lhs_t, rhs_t)
+        print(self)
+        assert is_expr_node(lhs)
+        assert is_expr_node(rhs)
     def __str__(self):
         return f'({str(self.lhs)} {self.symbol} {str(self.rhs)})'
     def eval(self, scope):
         lhs = self.lhs
         rhs = self.rhs
-        if not (type(lhs) is int):
+        if not is_expr_prim(lhs):
             # lhs = lhs.eval(scope)
             return Binary(lhs.eval(scope),self.rhs,self.symbol,self.func).eval(scope)
-        if not (type(self.rhs) is int):
+        if not is_expr_prim(rhs):
             # rhs = rhs.eval(scope)
             return Binary(lhs,rhs.eval(scope),self.symbol,self.func).eval(scope)
-        if (type(lhs) is int and type(rhs) is int):
-            return Expression(self.func(lhs, rhs))
+        if is_expr_prim(lhs) and is_expr_prim(rhs):
+            val = self.func(lhs, rhs)
+            print('EValed!', val)
+            return Expression(val)
         self.lhs = lhs
         self.rhs = rhs
         return Expression(Binary(lhs,rhs,self.symbol,self.func)) # this could cause reference issues
