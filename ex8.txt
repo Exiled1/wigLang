@@ -1,0 +1,10 @@
+{
+    int x := 1;
+    int y := 4;
+    int z := 9;
+    if (x > y) then {
+        z := 2;
+    } else {
+        z := 1;
+    }
+};

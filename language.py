@@ -112,12 +112,13 @@ class Conditional:
         tabs = '    '.join('' for i in range(self.consequent.depth))
         return f'if {str(self.condition)} then \n{cons_str} {tabs} else\n{alt_str}'
     def eval(self,scope):
+        assert self.consequent and self.alternative
         cond = self.condition.eval(scope)
-        print(cond)
+        # print(cond)
         if cond:
-            self.consequent.eval(scope)
+            scope = self.consequent.eval(scope)
         else:
-            self.alternative.eval(scope)
+            scope = self.alternative.eval(scope)
         return scope
     def set_consequent(self, consequent):
         self.consequent = consequent
@@ -157,8 +158,8 @@ class Binary:
         self.func = func
         lhs_t = type(lhs)
         rhs_t = type(rhs)
-        print(lhs_t, rhs_t)
-        print(self)
+        # print(lhs_t, rhs_t)
+        # print(self)
         assert is_expr_node(lhs)
         assert is_expr_node(rhs)
     def __str__(self):
@@ -174,7 +175,9 @@ class Binary:
             return Binary(lhs,rhs.eval(scope),self.symbol,self.func).eval(scope)
         if is_expr_prim(lhs) and is_expr_prim(rhs):
             val = self.func(lhs, rhs)
-            print('EValed!', val)
+            print(self, val)
+            if type(val) is bool:
+                return val
             return Expression(val)
         self.lhs = lhs
         self.rhs = rhs

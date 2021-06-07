@@ -26,7 +26,7 @@ with open('expr1.txt', 'r') as file:
     expression = file.read()
     parser.parse_expression(expression)
 '''
-with open('ex7.txt', 'r') as file:
+with open('ex8.txt', 'r') as file:
     source = file.read()
     processed = preprocess(source)
     lines = lineify(processed)

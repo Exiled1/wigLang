@@ -18,6 +18,7 @@ def make_mult(lhs,rhs):
 
 def _gt(a,b):
     return a > b
+    
 def _lt(a,b):
     return a < b
 
