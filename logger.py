@@ -37,7 +37,7 @@ class FinalLogger:
         for lis in entries:
             if type(lis) is list:
                 del lis[1] # this contains the object for debug logging.
-            tabs = lambda d:"\t".join(''for i in range(d))
+            tabs = lambda d:"    ".join(''for i in range(d))
             # if type(lis) is tuple:
             #     lis = list(lis)
             #     del lis[1]
