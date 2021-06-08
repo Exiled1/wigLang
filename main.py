@@ -26,13 +26,13 @@ with open('expr1.txt', 'r') as file:
     expression = file.read()
     parser.parse_expression(expression)
 '''
-with open('ex1.txt', 'r') as file:
+with open('ex9.txt', 'r') as file:
     source = file.read()
     processed = preprocess(source)
     lines = lineify(processed)
     parsed = parser.parse_lines(lines)
     print(parsed)
-    call_mode = interpreter.CallMode.NEED
+    call_mode = interpreter.CallMode.VALUE
     scope_mode = interpreter.ScopeMode.STATIC
     final = interpreter.evaluate(parsed, Scope(call_mode=call_mode, scope_mode=scope_mode))
 

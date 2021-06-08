@@ -264,7 +264,7 @@ def parse_lines(lines):
         elif line == '}':
             block = block.super_block
             depth -= 1
-            function = None
+            # function = None
             continue
         ast_node = identify_line(line)
         if is_conditional(line):
