@@ -28,7 +28,7 @@ class Assign:
     def eval(self, scope):
         value = self.value
         # if type(value) is Expression or type(value) is Binary or type(value) is FunctionCall or type(value) is Thunk:
-        if not (type(value) is Function or type(value) is int):
+        while not (type(value) is Function or type(value) is int):
             value = value.eval(scope)# This may be not poggers
             # if type(value) is Thunk:
             #     value = value.eval(scope)
@@ -76,6 +76,7 @@ class Block:
         return pp_block
     
     def eval(self, scope):
+        scope.stack_push()
         for inst in self.instructions:
             if type(inst) is Function:
                 continue
@@ -83,6 +84,7 @@ class Block:
             
         for var in self.local_variables:
             scope = scope.pop_var(var)
+        scope.stack_pop()
         return scope
 
 # Expr holds itself and (maybe its scope)
@@ -190,6 +192,9 @@ class Return:
         self.return_expression = return_expression
     def __str__(self):
         return f'return {str(self.return_expression)};'
+    def eval(self,scope):
+        return self.return_expression.eval(scope)
+
 
 class Function:
     def __init__(self,return_type,name,param_list):

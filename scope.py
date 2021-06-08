@@ -45,6 +45,11 @@ class Scope:
             i += 1
         return -1
 
+    def stack_push(self):
+        return None
+    def stack_pop(self):
+        return None
+
 
     def push_var(self, name, value):
         binding = Binding(name,value,self)

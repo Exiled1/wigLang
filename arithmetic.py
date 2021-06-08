@@ -22,6 +22,9 @@ def _gt(a,b):
 def _lt(a,b):
     return a < b
 
+def _eq(a,b):
+    return a == b
+
 def op_func(op):
     if op == '+':
         return _add
@@ -33,3 +36,7 @@ def op_func(op):
         return _gt
     elif op == '<':
         return _lt
+    elif op == '==' or op == '=':
+        return _eq
+    print('bruh u screwed up with ', op)
+    return None

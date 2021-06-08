@@ -32,7 +32,9 @@ with open('ex8.txt', 'r') as file:
     lines = lineify(processed)
     parsed = parser.parse_lines(lines)
     print(parsed)
-    final = interpreter.evaluate(parsed, Scope(call_mode=interpreter.CallMode.VALUE, scope_mode=interpreter.ScopeMode.STATIC))
+    call_mode = interpreter.CallMode.NEED
+    scope_mode = interpreter.ScopeMode.STATIC
+    final = interpreter.evaluate(parsed, Scope(call_mode=call_mode, scope_mode=scope_mode))
     logger_instance._print(changes=True)
     print('Result: ' + str(final))
-
+    print(call_mode, scope_mode)

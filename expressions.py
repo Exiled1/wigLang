@@ -150,7 +150,7 @@ funcCall = funcCall.setParseAction(func_action)
 # else
 multOp = oneOf("* /")#.setResultsName('op')
 addOp = oneOf("+ -")#.setResultsName('op')
-compareOp = oneOf('< > =')
+compareOp = oneOf('< > ==')
 numericLiteral = ppc.number
 operand = funcCall | numericLiteral | ref_
 
