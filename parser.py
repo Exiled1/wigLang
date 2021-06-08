@@ -133,7 +133,7 @@ def parse_expression(exp_str):
     return result
 
 def parse_declaration(line):
-    declare_and_maybe_assignment_rule = r"((int|bool) +)?([a-z]) *((:=)\s(.+))?;"
+    declare_and_maybe_assignment_rule = r"((int|bool) +)?([a-z]+) *((:=)\s(.+))?;"
     match = re.match(declare_and_maybe_assignment_rule, line)
     if match != None:
         groups = match.groups()
