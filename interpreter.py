@@ -43,7 +43,7 @@ class Thunk:
             return self.cache
         elif mode == CallMode.NEED:
             if self.cache == None:
-                self.cache = self.expression.eval(scope) # if not (type(self.expression) is int or type(self.expression) is language.Expression) else self.expression
+                self.cache = self.expression.eval(scope) if not (type(self.expression) is int) else self.expression
 
                 # self.cache = self.expression.eval(scope) if not (type(self.expression) is int or type(self.expression) is language.Expression) else self.expression
                 self.scope.set_var(self.name, self.cache)

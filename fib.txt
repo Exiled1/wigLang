@@ -1,0 +1,20 @@
+{
+    {
+        int fib(int n, int k)
+        {
+            k := k;
+            if (n < 3) then 
+            {
+                k := 1;
+            };
+              else
+            {
+                k := (fib(n - 1, 0) + fib(n - 2, 0));
+            };
+            return k;
+        };
+        int z;
+        z := 0;
+        z := fib(3, 0);
+    };
+};

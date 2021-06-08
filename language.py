@@ -28,7 +28,7 @@ class Assign:
     def eval(self, scope):
         value = self.value
         # if type(value) is Expression or type(value) is Binary or type(value) is FunctionCall or type(value) is Thunk:
-        while not (type(value) is Function or type(value) is int):
+        while not (type(value) is Function or type(value) is int or type(value) is bool):
             value = value.eval(scope)# This may be not poggers
             # if type(value) is Thunk:
             #     value = value.eval(scope)
