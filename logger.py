@@ -49,7 +49,7 @@ class FinalLogger:
                 print(tabs(self.depth), "<<")
                 self.depth -= 1
                 continue
-            print(tabs(self.depth + 1), *lis)
+            print(tabs(self.depth), *lis)
             #print(*lis, sep=' | ')
     def stack_push(self):
         self.add("push")

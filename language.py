@@ -160,8 +160,8 @@ class Binary:
         self.func = func
         lhs_t = type(lhs)
         rhs_t = type(rhs)
-        print(lhs_t, rhs_t)
-        print(self)
+        # print(lhs_t, rhs_t)
+        # print(self)
         assert is_expr_node(lhs)
         assert is_expr_node(rhs)
     def __str__(self):
