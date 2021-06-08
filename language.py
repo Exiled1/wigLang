@@ -177,7 +177,6 @@ class Binary:
             return Binary(lhs,rhs.eval(scope),self.symbol,self.func).eval(scope)
         if is_expr_prim(lhs) and is_expr_prim(rhs):
             val = self.func(lhs, rhs)
-            print(self, val)
             if type(val) is bool:
                 return val
             return Expression(val)

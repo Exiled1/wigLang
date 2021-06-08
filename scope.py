@@ -2,7 +2,7 @@ import copy
 from interpreter import *
 from language import *
 from logger import *
-
+import logger
 class Binding:
     def __init__(self, name, value, scope):
         self.name = name
@@ -46,8 +46,11 @@ class Scope:
         return -1
 
     def stack_push(self):
+        logger.final_log_inst.stack_push()
         return None
+    
     def stack_pop(self):
+        logger.final_log_inst.stack_pop()
         return None
 
 

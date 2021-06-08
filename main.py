@@ -26,7 +26,7 @@ with open('expr1.txt', 'r') as file:
     expression = file.read()
     parser.parse_expression(expression)
 '''
-with open('ex8.txt', 'r') as file:
+with open('ex1.txt', 'r') as file:
     source = file.read()
     processed = preprocess(source)
     lines = lineify(processed)
@@ -35,6 +35,9 @@ with open('ex8.txt', 'r') as file:
     call_mode = interpreter.CallMode.NEED
     scope_mode = interpreter.ScopeMode.STATIC
     final = interpreter.evaluate(parsed, Scope(call_mode=call_mode, scope_mode=scope_mode))
-    logger_instance._print(changes=True)
+
+    #final_log_inst._print(changes=False)
+
+    logger_instance._print(changes=False)
     print('Result: ' + str(final))
     print(call_mode, scope_mode)
